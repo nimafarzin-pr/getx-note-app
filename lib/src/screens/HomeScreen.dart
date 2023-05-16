@@ -28,10 +28,10 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  _navigatorAction(act, screen) {
+  _navigatorAction(act, screen, data) {
     if (act == 'push') {
       //!for splash screen we can use off/offName instead to and then we cant back
-      Get.toNamed(screen);
+      Get.toNamed(screen, arguments: data);
     } else {
       Get.back();
     }
@@ -40,14 +40,12 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    print('initState');
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     super.dispose();
-    print('dispose');
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -63,12 +61,6 @@ class _HomeScreenState extends State<HomeScreen>
     } else if (state == AppLifecycleState.detached) {
       print('detached');
     }
-  }
-
-  @override
-  void didUpdateWidget(covariant HomeScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    print('didUpdateWidget');
   }
 
   final NoteController controller = Get.find<NoteController>();
@@ -113,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen>
                         MyIconButton(
                           action: () {
                             // apiService.doSome();
-                            _navigatorAction('push', '/search');
+                            _navigatorAction('push', '/search', null);
                           },
                           color: Colors.white,
                           icon: Icons.search,
@@ -144,6 +136,10 @@ class _HomeScreenState extends State<HomeScreen>
                             itemBuilder: (BuildContext context, int index) {
                               final item = controller.noteLists[index];
                               return NoteItem(
+                                  onTap: () {
+                                    _navigatorAction(
+                                        'push', '/add', [false, item]);
+                                  },
                                   index: index,
                                   controller: controller,
                                   item: item);
@@ -184,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen>
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
         child: FloatingActionButton(
           onPressed: () {
-            _navigatorAction('push', '/add');
+            _navigatorAction('push', '/add', [true, null]);
             // _updateSize();
           },
           // tooltip: 'Increment',

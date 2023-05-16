@@ -22,7 +22,7 @@ class SplashScreen extends StatelessWidget {
               height: 200.r,
             ),
             Text(
-              'Dum note!',
+              'Note!',
               style: TextStyle(fontSize: 30.sp, color: Colors.white),
             ),
           ],

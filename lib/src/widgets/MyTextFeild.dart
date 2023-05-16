@@ -15,7 +15,7 @@ class MyTextFeild extends StatelessWidget {
   final anim;
   final animController;
 
-  final Function(String) setText;
+  final Function(String)? setText;
 
   const MyTextFeild(
       {Key? key,
@@ -25,7 +25,7 @@ class MyTextFeild extends StatelessWidget {
       this.max_line_number,
       this.min_line_number,
       this.multiline,
-      required this.setText,
+      this.setText,
       this.controller,
       this.fontSize,
       required this.anim,
@@ -43,7 +43,9 @@ class MyTextFeild extends StatelessWidget {
               maxLines: max_line_number,
               minLines: min_line_number,
               onChanged: (text) {
-                setText(text);
+                if (setText != null) {
+                  setText!(text);
+                }
               },
               style: TextStyle(fontSize: fontSize, color: Colors.white),
               decoration: anim == true

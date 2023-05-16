@@ -1,10 +1,12 @@
-import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import 'package:fl_ui_app/src/controller/NoteController.dart';
 import 'package:fl_ui_app/src/widgets/MyTextFeild.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/instance_manager.dart';
+
+import '../Model/Note.dart';
+import 'items/NoteItem.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -15,31 +17,27 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen>
     with TickerProviderStateMixin {
-  final List<String> searchItems = <String>[''];
   //*use dependency with getx
+  List<Note> searchItems = <Note>[];
   // final useDependency = Get.find<Api>();
   final controller = Get.find<NoteController>();
   late AnimationController animatedController;
-  late final Animation<double> _animation;
-  var searchText = '';
+  TextEditingController searchText = TextEditingController(text: "");
 
   @override
   initState() {
-    print('in Search');
+    searchItems = List.from(controller.noteLists);
     animatedController = BottomSheet.createAnimationController(this);
     animatedController.duration = const Duration(milliseconds: 900);
-    _animation = CurvedAnimation(
-      reverseCurve: Curves.bounceIn,
-      parent: animatedController,
-      curve: Curves.slowMiddle,
-    );
-    animatedController.repeat();
+
+    // animatedController.repeat();
     super.initState();
   }
 
   @override
   void dispose() {
     animatedController.dispose();
+    searchText.dispose();
     super.dispose();
   }
 
@@ -58,23 +56,31 @@ class _SearchScreenState extends State<SearchScreen>
               children: [
                 MyTextFeild(
                   animController: animatedController,
-                  anim: searchText.isNotEmpty ? true : false,
+                  anim: searchText.text.isNotEmpty ? true : false,
                   max_line_number: 1,
                   fontSize: 20.sp,
+                  controller: searchText,
                   multiline: TextInputType.text,
                   icon: Icons.search,
                   hint_color: Colors.white54,
                   hint: 'Search Somthing...',
                   setText: (value) {
-                    setState(() {
-                      searchText = value;
-                    });
-                    // print('>>>${controller.title}');
-                    if (value.isNotEmpty) {
-                      animatedController.repeat();
-                    } else {
+                    searchItems.clear();
+                    if (value.isEmpty) {
                       animatedController.forward();
+                      setState(() {
+                        searchItems.addAll(controller.noteLists);
+                      });
+                      return;
                     }
+                    animatedController.repeat();
+                    for (var element in controller.noteLists) {
+                      if (element.toMap().values.toString().contains(value)) {
+                        searchItems.add(element);
+                      }
+                    }
+
+                    setState(() {});
                   },
                 ),
                 Expanded(
@@ -82,15 +88,43 @@ class _SearchScreenState extends State<SearchScreen>
                     color: Colors.black,
                     width: 100.sw,
                     height: double.infinity,
-                    child: UnconstrainedBox(
-                      child: Container(
-                        width: 150.r,
-                        height: 150.r,
-                        margin: EdgeInsets.only(bottom: 12.w),
-                        child: Image.asset('assets/images/notes.png',
-                            color: Colors.white38),
-                      ),
-                    ),
+                    child: searchItems.isNotEmpty
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            addRepaintBoundaries: true,
+                            itemCount: searchItems.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final item = searchItems[index];
+                              return NoteItem(
+                                  isDismissable: false,
+                                  onTap: () {
+                                    searchText.clear();
+                                    setState(() {});
+                                    Get.toNamed('/add',
+                                            arguments: [false, item])
+                                        ?.then((value) {
+                                      if (value) {
+                                        setState(() {
+                                          searchItems =
+                                              List.from(controller.noteLists);
+                                        });
+                                      }
+                                    });
+                                  },
+                                  index: index,
+                                  controller: controller,
+                                  item: item);
+                            },
+                          )
+                        : UnconstrainedBox(
+                            child: Container(
+                              width: 150.r,
+                              height: 150.r,
+                              margin: EdgeInsets.only(bottom: 12.w),
+                              child: Image.asset('assets/images/search.png',
+                                  color: Colors.white38),
+                            ),
+                          ),
                   ),
                 ),
               ],

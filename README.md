@@ -1,11 +1,13 @@
 # getx note app
 
-A simple note app.
+![Project!](note_overview.png)
+
+Note app.
 
 ## Getting Started
 
-This project is simple note app with getx and simple animation.
+This project is a simple note application with getx.
 
-- getx state management
-- animation
-- responsive ui
+- Getx state management
+- Animations
+- Responsive ui

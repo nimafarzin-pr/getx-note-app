@@ -8,6 +8,9 @@ import 'package:fl_ui_app/src/widgets/MyIconButton.dart';
 import 'package:fl_ui_app/src/widgets/MyTextFeild.dart';
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
+
+import '../widgets/MyButtonSheet.dart';
 
 class AddNoteScreen extends StatefulWidget {
   const AddNoteScreen({Key? key}) : super(key: key);
@@ -17,9 +20,32 @@ class AddNoteScreen extends StatefulWidget {
 }
 
 class _AddNoteScreenState extends State<AddNoteScreen> {
-  var title = '';
-  var description = '';
+  TextEditingController title = TextEditingController();
+  TextEditingController description = TextEditingController();
   final NoteController controller = Get.find<NoteController>();
+  var navigationData;
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      var data = Get.arguments;
+      if (data != null && data[0] == false) {
+        final note = data[1] as Note;
+        navigationData = note;
+        title.text = note.title;
+        description.text = note.description;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    title.dispose();
+    description.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,29 +83,45 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          MyIconButton(
-                              action: () {},
-                              color: Colors.white,
-                              icon: Icons.visibility),
+                          MyModalBottomButton(
+                            icon: Icons.visibility,
+                            description: description.text,
+                            title: title.text,
+                          ),
                           const SizedBox(
                             width: 12,
                           ),
                           MyIconButton(
                             action: () {
-                              if (title.isNotEmpty && description.isNotEmpty) {
+                              if (title.text.isNotEmpty &&
+                                  description.text.isNotEmpty) {
                                 var now = DateTime.now();
                                 var formatterDate = DateFormat(
                                   'yyyy-MM-dd',
                                 );
                                 String actualDate = formatterDate.format(now);
-                                controller.updateNoteList(Note(
-                                    title: title,
-                                    description: description,
-                                    color: Color((math.Random().nextDouble() *
-                                                0xFFFFFF)
-                                            .toInt())
-                                        .withOpacity(1.0),
-                                    time: actualDate));
+                                if (navigationData != null) {
+                                  final data = navigationData as Note;
+
+                                  controller.updateNote(
+                                      Note(
+                                          color: data.color,
+                                          description: description.text,
+                                          title: title.text,
+                                          time: actualDate),
+                                      data.id);
+                                } else {
+                                  controller.addNoteToList(Note(
+                                      title: title.text,
+                                      description: description.text,
+                                      color: Color((math.Random().nextDouble() *
+                                                  0xFFFFFF)
+                                              .toInt())
+                                          .withOpacity(1.0),
+                                      time: actualDate,
+                                      id: const Uuid().v4()));
+                                }
+                                Get.back(result: true);
                               } else {
                                 Snack().showSnackBar(
                                     'Error', 'Please enter title');
@@ -101,16 +143,15 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     children: [
                       MyTextFeild(
                         anim: false,
+                        controller: title,
                         fontSize: 30.sp,
                         multiline: TextInputType.text,
                         icon: Icons.title,
                         max_line_number: 1,
                         hint_color: Colors.white54,
                         hint: 'Add your title',
-                        setText: (value) {
-                          setState(() {
-                            title = value;
-                          });
+                        setText: (p0) {
+                          setState(() {});
                         },
                       ),
                       const SizedBox(
@@ -121,14 +162,13 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         fontSize: 20.sp,
                         min_line_number: 1,
                         max_line_number: 4,
+                        controller: description,
                         multiline: TextInputType.multiline,
                         icon: Icons.description,
                         hint_color: Colors.white54,
                         hint: 'Add your description',
-                        setText: (value) {
-                          setState(() {
-                            description = value;
-                          });
+                        setText: (p0) {
+                          setState(() {});
                         },
                       ),
                     ],

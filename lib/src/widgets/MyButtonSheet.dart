@@ -8,8 +8,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class MyModalBottomButton extends StatefulWidget {
   final String title;
   final String description;
+  final IconData? icon;
   const MyModalBottomButton({
     Key? key,
+    this.icon,
     required this.title,
     required this.description,
   }) : super(key: key);
@@ -86,7 +88,7 @@ class ModalBottomSheetDemo extends State<MyModalBottomButton>
         );
       },
       color: Colors.white,
-      icon: Icons.info_outline,
+      icon: widget.icon ?? Icons.info_outline,
     );
   }
 }
